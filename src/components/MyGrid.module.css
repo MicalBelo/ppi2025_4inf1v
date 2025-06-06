@@ -2,7 +2,7 @@
   padding: 3rem;
   display: grid;
   gap: 3rem;
-  grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
   grid-template-rows: repeat(auto-fit, min-content);
 }
 
@@ -21,20 +21,24 @@
   display: grid;
 
   grid-template-areas:
-    "header1 header1"
-    "aside header2"
-    "aside main"
-    "footer footer";
+    "header1 header1 header1"
+    "aside header2 aside2"
+    "aside main aside2 "
+    "aside footer aside2"
+    "footer2 footer2 aside2";
 
-  grid-template-columns: 1fr 3fr;
-  grid-template-rows: 10rem 5rem auto 10rem;
+  grid-template-columns: 1fr 3fr 1fr;
+  grid-template-rows: 10rem 5rem auto 5rem 5rem;
 
   @media (max-width: 1200px) {
     grid-template-areas:
       "header1"
       "header2"
       "main"
-      "footer";
+      "footer"
+      "footer2"
+      "aside"
+       ;
 
     grid-template-columns: 1fr;
   }
@@ -53,13 +57,22 @@
 .aside {
   grid-area: aside;
   background-color: deeppink;
+}
+
+.aside2 {
+  grid-area: aside2;
+  background-color: deeppink;
 
   @media (max-width: 1200px) {
     display: none;
   }
 }
-
 .footer {
   grid-area: footer;
   background-color: darkslateblue;
 }
+.footer2 {
+  grid-area: footer2;
+  background-color: darkslategrey;
+}
+
