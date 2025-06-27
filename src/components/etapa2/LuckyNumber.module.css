@@ -4,15 +4,16 @@
     flex-direction: column;
     align-items: center;
     justify-content: start;
-    font-size: 3rem;
-    height: 100vh;
     gap: 2rem;
-    background-color: var(--primary-dark);
+    height: 100vh;
+    background-color: var(--primary-light);
+    font-size: 3rem;
+    
 }
 
 .button {
-    background-color: var(--primary-light);
-    color: var(--primary-contrast-light);
+    background-color: var(--primary-contrast-light);
+    color: var(--primary-dark);
     border: none;
     padding: 1rem 2rem;
     border-radius: 0.5rem;
@@ -23,7 +24,11 @@
 }
 
 .button:hover {
-    background-color: var(--primary-contrast-light);
-    color: var(--primary-light);
+    background-color: var(--primary-light);
     transform: scale(1.05);
+}
+
+.buttons {
+    display: flex;
+    gap: 1rem;
 }
