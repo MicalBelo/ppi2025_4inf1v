@@ -1,83 +1,55 @@
-import { useState } from "react";
 import styles from "./Cart.module.css";
 
-export function Cart({ cart, setCart, clearCart }) {
-  
-  const grouped = cart.reduce((acc, item) => {
-    if (!acc[item.id]) {
-      acc[item.id] = { ...item, quantity: 1 };
-    } else {
-      acc[item.id].quantity += 1;
-    }
-    return acc;
-  }, {});
-  const products = Object.values(grouped);
+import { useContext } from "react";
+import { CartContext } from "../service/CartContext";
 
-  function increaseQty(id) {
-    const product = cart.find((p) => p.id === id);
-    setCart([...cart, product]);
-  }
-
-  function decreaseQty(id) {
-    const idx = cart.findIndex((p) => p.id === id);
-    if (idx !== -1) {
-      const newCart = [...cart];
-      newCart.splice(idx, 1);
-      setCart(newCart);
-    }
-  }
-
-  function removeItem(id) {
-    setCart(cart.filter((p) => p.id !== id));
-  }
+export function Cart() {
+  const { cart, addToCart, removeFromCart, clearCart } = useContext(CartContext);
 
   return (
-    <div className={styles.cartPage}>
-      <h2 className={styles.title}>Carrinho de Compras</h2>
-      {products.length === 0 ? (
-        <p className={styles.empty}>Seu carrinho está vazio.</p>
+    <div className={styles.cart}>
+      <div className={styles.head}>
+        <p>Shopping Cart</p>
+        <button
+          className={styles.removeAll}
+           onClick={() => clearCart()}
+        >
+          Remove all products
+        </button>
+      </div>
+
+      {cart.length === 0 ? (
+        <p>Your cart is empty.</p>
       ) : (
-        <>
-          <button className={styles.clearBtn} onClick={clearCart}>
-            Remover todos os itens
-          </button>
-          <ul className={styles.cartList}>
-            {products.map((product) => (
-              <li key={product.id} className={styles.cartItem}>
-                <img
-                  src={product.thumbnail}
-                  alt={product.title}
-                  className={styles.thumb}
-                />
-                <div className={styles.info}>
-                  <h3>{product.title}</h3>
+        <ul className={styles.prodList}>
+          {cart.map((product, index) => (
+            <li key={index}>
+              <div className={styles.prodImgContainer}>
+                <img src={product.thumbnail} alt={product.title} />
+              </div>
+
+              <div className={styles.prodInfoContainer}>
+                <h3>{product.title}</h3>
+                <p>${product.price.toFixed(2)}</p>
+              </div>
+
+              <div className={styles.prodQtyContainer}>
+                <span>Quantity</span>
+
+                <div className={styles.qtyProduct}>
+                  <button onClick={() => removeFromCart(product.id)}>-</button>
+                  <span>{product.qty}</span>
+                  <button onClick={() => addToCart(product)}>+</button>
                 </div>
-                <div className={styles.qtyControl}>
-                  <button
-                    onClick={() => decreaseQty(product.id)}
-                    className={styles.qtyBtn}
-                  >
-                    -
-                  </button>
-                  <span>{product.quantity}</span>
-                  <button
-                    onClick={() => increaseQty(product.id)}
-                    className={styles.qtyBtn}
-                  >
-                    +
-                  </button>
-                </div>
-                <button
-                  onClick={() => removeItem(product.id)}
-                  className={styles.removeBtn}
-                  title="Remover item"
-                >
-                  🗑️
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
+              </div>
+
+              <div className={styles.totalPriceContainer}>
+                <span>Total:</span>
+                <p>$ {(product.price * product.qty).toFixed(2)}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

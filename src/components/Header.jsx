@@ -1,18 +1,25 @@
-import { ShoppingBasket } from "lucide-react";
 import styles from "./Header.module.css";
-import { Link } from "react-router";
 
-export function Header({ cart }) {
+import { ShoppingBasket } from "lucide-react";
+import { Link } from "react-router";
+import { useContext } from "react";
+import { CartContext } from "../service/CartContext";
+
+export function Header() {  const { cart } = useContext(CartContext);
   return (
     <div className={styles.container}>
-      <Link to="/" className={styles.link}><h1>TJA Megastore</h1></Link>
+      <Link to="/" className={styles.link}>
+        <h1>TJA Megastore</h1>
+      </Link>
       <Link to="/cart" className={styles.link}>
         <div className={styles.cartInfo}>
-          <ShoppingBasket size={32} />
+          <ShoppingBasket size={24} />
+          <p>{cart.reduce((total, prod) => total + prod.qty, 0)} items</p>
           <p>
-            {cart.length === 0
-              ? "Carrinho vazio"
-              : `Total: $${cart.reduce((total, product) => total + product.price, 0).toFixed(2)}`}
+            Total: ${" "}
+            {cart
+              .reduce((total, prod) => total + prod.price * prod.qty, 0)
+              .toFixed(2)}
           </p>
         </div>
       </Link>
