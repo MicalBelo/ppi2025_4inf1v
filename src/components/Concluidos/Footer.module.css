@@ -3,8 +3,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem;
-  background-color: var(--primary-light);
-  color: rgb(111, 111, 111);
+  background-color: var(--primary-red-light);
+  color: var(--primary-red-contrast);
   flex-wrap: wrap;
 }
 
@@ -39,21 +39,21 @@
 }
 
 .icons a {
-  color: rgb(111, 111, 111);
+  color: var(--primary-red-lighter);
   transition: color 0.3s;
 }
 
 .icons a:hover {
- color: rgb(111, 111, 111);
+  color: var(--primary-red);
 }
 
 .icons svg {
-  color: rgb(111, 111, 111);
+  color: var(--primary-red-lighter);
   transition: stroke 0.3s;
 }
 
 .icons a:hover svg {
-  stroke: rgb(232, 4, 4);
+  stroke: var(--primary-red);
 }
 .footeiconsrRight svg {
   width: 24px;

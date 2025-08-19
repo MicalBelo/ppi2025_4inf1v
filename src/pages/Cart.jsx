@@ -12,14 +12,14 @@ export function Cart() {
         <p>Shopping Cart</p>
         <button
           className={styles.removeAll}
-           onClick={() => clearCart()}
+          onClick={() => clearCart()}
         >
           Remove all products
         </button>
       </div>
 
       {cart.length === 0 ? (
-        <p>Your cart is empty.</p>
+        <p style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Your cart is empty.</p>
       ) : (
         <ul className={styles.prodList}>
           {cart.map((product, index) => (

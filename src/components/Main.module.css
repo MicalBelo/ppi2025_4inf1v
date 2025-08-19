@@ -39,12 +39,12 @@
 
 .header2 {
   grid-area: header2;
-  background-color: deepskyblue;
+  background-color: var(--primary);
 }
 
 .aside {
   grid-area: aside;
-  background-color: deeppink;
+  background-color: var(--primary-red-light);
 
   @media (max-width: 1200px) {
     display: none;

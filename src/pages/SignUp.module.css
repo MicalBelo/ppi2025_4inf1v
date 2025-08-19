@@ -1,0 +1,82 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  color: var(--cinza);
+}
+
+.loginCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary-dark);
+  width: fit-content;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: ridge 1px var(--primary-dark);
+}
+
+.loginButton {
+  background-color: var(--primary);
+  color: var(--primary-contrast-light);
+  font-size: 1.3rem;
+  padding: 0.5rem 1rem;
+  border: ridge 1px var(--primary-dark);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 0.75rem;
+}
+
+.loginButton:hover {
+  background-color: var(--primary-dark);
+  box-shadow: 0 0 4px var(--primary);
+}
+
+.link {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 1.2rem;
+}
+
+.signup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.link p:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+.dateLabel {
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.dateLabel input {
+  border-radius: 0.5rem;
+  background-color: var(--primary-light);
+  padding: 0.25rem 0;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  color: var(--primary-contrast-dark);
+  border: ridge 1px var(--primary-dark);
+  font-size: 1.5rem;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.dateLabel input::placeholder {
+  color: var(--primary-contrast-light);
+  font-size: 1.3rem;
+}
+
+.dateLabel input:focus {
+  outline: none;
+  box-shadow: 0 0 4px var(--primary);
+}

@@ -1,0 +1,60 @@
+.productRow:nth-child(odd) {
+  background-color: var(--primary);
+}
+
+.productRow {
+  padding: 0.75rem;
+  background-color: var(--secondary);
+  color: var(--primary-text);
+  text-align: center;
+  margin: 1rem;
+}
+
+.productRow td {
+  color: var(--primary-text);
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.imgContainer {
+  width: 100px;
+  height: 90px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.imgContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--secondary-dark);
+  color: var(--background-light);
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  margin: 0.25rem;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--accent);
+  color: var(--text-dark);
+}

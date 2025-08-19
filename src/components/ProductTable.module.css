@@ -1,0 +1,17 @@
+.table {
+    background-color: var(--secondary-dark);
+    border-radius: 0.5rem;
+    margin: auto;
+    border-spacing: 0.625rem;
+    border-collapse: collapse;
+    border: ridge var(--border-dark);
+    max-width: 1200px;
+    width: 80%;
+}
+
+.table th {
+    background-color: var(--primary);
+    color: var(--primary-text);
+    padding: 0.75rem;
+    text-align: center;
+}

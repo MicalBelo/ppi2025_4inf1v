@@ -1,0 +1,54 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    color: var(--cinza);
+}
+
+.loginCard {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--primary-dark);
+    width: fit-content;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: ridge 1px var(--primary);
+}
+
+.loginButton {
+    background-color: var(--button-bg-primary);
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    padding: 0.5rem 1rem;
+    border: ridge 1px var(--border-dark);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 0.75rem;
+}
+
+.loginButton:hover {
+    background-color: var(--button-bg-secondary);
+    box-shadow: 0 0 4px var(--secondary-light);
+}
+
+.link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 1.2rem;
+}
+
+.signup {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.link p:hover {
+    color: var(--accent-light);
+    text-decoration: underline;
+}

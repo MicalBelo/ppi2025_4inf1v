@@ -1,0 +1,32 @@
+.label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.label span {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+  padding-left: 0.4rem;
+}
+
+.label input {
+  border-radius: 0.5rem;
+  background-color: var(--secondary-dark);
+  padding: 0.25rem 0;
+  padding-left: 0.5rem;
+  color: var(--text-primary);
+  border: ridge 1px var(--border-dark);
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.label input::placeholder {
+  color: var(--text-secondary);
+  font-size: 1.3rem;
+}
+
+.label input:focus {
+  outline: none;
+  box-shadow: 0 0 4px var(--secondary-light);
+}
