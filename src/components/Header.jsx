@@ -3,10 +3,12 @@ import { ShoppingBasket } from "lucide-react";
 import { Link } from "react-router";
 import { useContext } from "react";
 import { CartContext } from "../context/CartContext";
+import { SessionContext } from "../context/SessionContext";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
-  const { cart, session } = useContext(CartContext);
+  const { cart } = useContext(CartContext);
+  const { session } = useContext(SessionContext);
 
   return (
     <div className={styles.container}>
@@ -39,19 +41,20 @@ export function Header() {
               <ShoppingBasket size={32} />
               {cart.length > 0 && (
                 <span className={styles.cartCount}>
-                  {cart.reduce((total, item) => total + item.quantity, 0)}
+                  {cart.reduce((total, item) => total + (Number(item.quantity) || 0), 0)}
                 </span>
               )}
             </div>
 
             <p>
               Total: ${" "}
-              {cart
-                .reduce(
-                  (total, product) => total + product.price * product.quantity,
+              {(
+                cart.reduce(
+                  (total, product) =>
+                    total + (Number(product.price) || 0) * (Number(product.quantity) || 0),
                   0
                 )
-                .toFixed(2)}
+              ).toFixed(2)}
             </p>
           </div>
         </Link>

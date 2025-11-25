@@ -1,6 +1,6 @@
 import styles from "./Login.module.css";
 import { useState, useContext, useEffect } from "react";
-import { CartContext } from "../context/CartContext";
+import { SessionContext } from "../context/SessionContext";
 import { Field } from "@base-ui-components/react/field";
 import { Form } from "@base-ui-components/react/form";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
@@ -9,7 +9,7 @@ import { CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router";
 
 export function Login({ value }) {
-  // User Context
+  
   const {
     handleSignIn,
     handleSignUp,
@@ -17,7 +17,7 @@ export function Login({ value }) {
     sessionLoading,
     sessionMessage,
     sessionError,
-  } = useContext(CartContext);
+  } = useContext(SessionContext);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -28,7 +28,7 @@ export function Login({ value }) {
 
   const [errors, setErrors] = useState({});
   // const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState(value); // "signin" or "register"
+  const [mode, setMode] = useState(value);
   const [showPassword, setShowPassword] = useState(false);
   const [formValues, setFormValues] = useState({
     email: "",
@@ -42,7 +42,6 @@ export function Login({ value }) {
   }, [value]);
 
   useEffect(() => {
-    // Monitor changes in sessionMessage and sessionError
     if (sessionMessage) {
       toast.success(sessionMessage, {
         position: "top-center",
@@ -89,8 +88,6 @@ export function Login({ value }) {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    // Basic validation
-    // TODO: Buscar por REGEXP 
     const newErrors = {};
     if (!formValues.email) newErrors.email = "Email is required";
     if (!formValues.password) newErrors.password = "Password is required";

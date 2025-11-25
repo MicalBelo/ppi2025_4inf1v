@@ -1,32 +1,38 @@
 import { useContext } from "react";
 import styles from "./User.module.css";
-import { CartContext } from "../context/CartContext";
+import { SessionContext } from "../context/SessionContext";
+import { Manager } from "./Manager";
 
 export function User() {
-  const { session, handleSignOut } = useContext(CartContext);
+  const { session, handleSignOut } = useContext(SessionContext);
   return (
     <div>
       {session ? (
         <div className={styles.container}>
           {session.user.user_metadata.admin ? (
-            <h1>Admin Account</h1>
+            <>
+              <h1>Admin Account</h1>
+              <Manager />
+            </>
           ) : (
-            <h1>User Account</h1>
+            <>
+              <h1>User Account</h1>
+              <div className={styles.userInfo}>
+                <p>
+                  <strong>Username: </strong>
+                  {session.user.user_metadata.username}
+                </p>
+                <p>
+                  <strong>Email: </strong>
+                  {session.user.email}
+                </p>
+                <p>
+                  <strong>ID: </strong>
+                  {session.user.id}
+                </p>
+              </div>
+            </>
           )}
-          <div className={styles.userInfo}>
-            <p>
-              <strong>Username: </strong>
-              {session.user.user_metadata.username}
-            </p>
-            <p>
-              <strong>Email: </strong>
-              {session.user.email}
-            </p>
-            <p>
-              <strong>ID: </strong>
-              {session.user.id}
-            </p>
-          </div>
           <button className={styles.button} onClick={handleSignOut}>
             SIGN OUT
           </button>

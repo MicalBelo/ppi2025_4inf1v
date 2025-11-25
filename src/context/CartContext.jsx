@@ -1,193 +1,239 @@
-import { useState, useEffect, createContext } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "../utils/supabase";
+import { SessionContext } from "./SessionContext";
 
 export const CartContext = createContext({
-  // Context to manage the products state
   products: [],
   loading: false,
   error: null,
-  // Context to manage the cart state
   cart: [],
+  theme: "light",
   addToCart: () => {},
   updateQtyCart: () => {},
   removeFromCart: () => {},
   clearCart: () => {},
-  // Context to manage user session
-  session: null,
-  sessionLoading: false,
-  sessionMessage: null,
-  sessionError: null,
-  handleSignUp: () => {},
-  handleSignIn: () => {},
-  handleSignOut: () => {},
+  setTheme: () => {},
 });
 
 export function CartProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cart, setCart] = useState([]);
+  const [theme, setTheme] = useState("light");
 
+  const { session } = useContext(SessionContext);
+  const LOCAL_CART_KEY = "cart";
+  const LOCAL_THEME_KEY = "theme";
+
+  
+  const persistLocalCart = (items) => {
+    try {
+      localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(items));
+    } catch {}
+  };
+
+  
+  const persistTheme = (value) => {
+    try {
+      localStorage.setItem(LOCAL_THEME_KEY, value);
+      document.documentElement.setAttribute("data-theme", value);
+    } catch {}
+  };
+
+  
   useEffect(() => {
-    async function fetchProductsSupabase() {
-      const { data, error } = await supabase.from("product_2v").select();
-      if (error) {
-        setError(`Fetching products failed! ${error.message}`);
-      } else {
-        setProducts(data);
-      }
+    async function fetchProducts() {
+      const { data, error } = await supabase.from("product_1v").select();
+      if (error) setError(error.message);
+      else setProducts(data);
       setLoading(false);
     }
-    fetchProductsSupabase();
-    // State to manage products API
-    // var category = "smartphones";
-    // var limit = 10;
-    // var apiUrl = `https://dummyjson.com/products/category/${category}?limit=${limit}&select=id,thumbnail,title,price,description`;
-
-    // async function fetchProducts() {
-    //   try {
-    //     const response = await fetch(apiUrl);
-    //     const data = await response.json();
-    //     setProducts(data.products);
-    //   } catch (error) {
-    //     setError(error);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // }
-    // fetchProducts();
+    fetchProducts();
   }, []);
+  
+  const loadCartForUser = async (user_id) => {
+    try {
+      const { data, error } = await supabase
+        .from("cart")
+        .select(`
+          product_id,
+          quantity,
+          product_1v (title, price, thumbnail)
+        `)
+        .eq("user_id", user_id);
 
-  // State to manage the cart
-  const [cart, setCart] = useState([]);
+      if (error) {
+        console.error("Error loading cart:", error);
+        return;
+      }
 
-  function addToCart(product) {
-    // Check if the product is already in the cart
-    const existingProduct = cart.find((item) => item.id === product.id);
-    if (existingProduct) {
-      updateQtyCart(product.id, existingProduct.quantity + 1);
+      const loaded = data.map((row) => ({
+        id: row.product_id,
+        quantity: row.quantity,
+        title: row.product_1v?.title,
+        price: row.product_1v?.price,
+        thumbnail: row.product_1v?.thumbnail,
+      }));
+
+      setCart(loaded);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  
+  const mergeLocalToRemote = async (user_id) => {
+    try {
+      const raw = localStorage.getItem(LOCAL_CART_KEY);
+      if (!raw) return;
+      const local = JSON.parse(raw);
+
+      for (const item of local) {
+        const product_id = item.id;
+        const { data: existing } = await supabase
+          .from("cart")
+          .select("quantity")
+          .match({ user_id, product_id })
+          .single();
+
+        if (existing) {
+          const newQty = existing.quantity + item.quantity;
+          await supabase
+            .from("cart")
+            .update({ quantity: newQty })
+            .match({ user_id, product_id });
+        } else {
+          await supabase.from("cart").insert([{ user_id, product_id, quantity: item.quantity }]);
+        }
+      }
+
+      localStorage.removeItem(LOCAL_CART_KEY);
+      await loadCartForUser(user_id);
+    } catch (e) {
+      console.error("Error merging cart:", e);
+    }
+  };
+  
+  const addToCart = async (product) => {
+    const product_id = product.id;
+
+    if (session?.user?.id) {
+      const user_id = session.user.id;
+      try {
+        const { data: existing } = await supabase
+          .from("cart")
+          .select("quantity")
+          .match({ user_id, product_id })
+          .single();
+
+        if (existing) {
+          const newQty = existing.quantity + 1;
+          await supabase.from("cart").update({ quantity: newQty }).match({ user_id, product_id });
+        } else {
+          await supabase.from("cart").insert([{ user_id, product_id, quantity: 1 }]);
+        }
+
+        await loadCartForUser(user_id);
+      } catch (e) {
+        console.error("Error adding to remote cart", e);
+      }
     } else {
-      setCart((prevCart) => [...prevCart, { ...product, quantity: 1 }]);
-    }
-  }
-
-  function removeFromCart(productId) {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
-  }
-
-  function updateQtyCart(productId, quantity) {
-    setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.id === productId ? { ...item, quantity: quantity } : item
-      )
-    );
-  }
-
-  function clearCart() {
-    setCart([]);
-  }
-
-  // User Session Management
-  const [session, setSession] = useState(null);
-  const [sessionLoading, setSessionLoading] = useState(false);
-  const [sessionMessage, setSessionMessage] = useState(null);
-  const [sessionError, setSessionError] = useState(null);
-
-  async function handleSignUp(email, password, username) {
-    setSessionLoading(true);
-    setSessionMessage(null);
-    setSessionError(null);
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username: username,
-            admin: false,
-          },
-          emailRedirectTo: `${window.location.origin}/signin`,
-        },
+      setCart((prev) => {
+        const existing = prev.find((it) => it.id === product_id);
+        const next = existing
+          ? prev.map((it) => (it.id === product_id ? { ...it, quantity: it.quantity + 1 } : it))
+          : [...prev, { id: product_id, quantity: 1, title: product.title, price: product.price, thumbnail: product.thumbnail }];
+        persistLocalCart(next);
+        return next;
       });
-
-      if (error) throw error;
-
-      if (data.user) {
-        setSessionMessage(
-          "Registration successful! Check your email to confirm your account."
-        );
-        window.location.href = "/signin";
-      }
-    } catch (error) {
-      setSessionError(error.message);
-    } finally {
-      setSessionLoading(false);
     }
-  }
+  };
 
-  async function handleSignIn(email, password) {
-    setSessionLoading(true);
-    setSessionMessage(null);
-    setSessionError(null);
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+  const removeFromCart = async (productId) => {
+    if (session?.user?.id) {
+      await supabase.from("cart").delete().match({ user_id: session.user.id, product_id: productId });
+      await loadCartForUser(session.user.id);
+    } else {
+      setCart((prev) => {
+        const next = prev.filter((item) => item.id !== productId);
+        persistLocalCart(next);
+        return next;
       });
+    }
+  };
 
-      if (error) throw error;
-
-      if(data.session){
-        setSession(data.session);
-        setSessionMessage("Sign in successful!");
+  const updateQtyCart = async (productId, quantity) => {
+    if (session?.user?.id) {
+      if (quantity <= 0) {
+        await supabase.from("cart").delete().match({ user_id: session.user.id, product_id: productId });
+      } else {
+        await supabase.from("cart").update({ quantity }).match({ user_id: session.user.id, product_id: productId });
       }
-    } catch (error) {
-      setSessionError(error.message);
-    } finally {
-      setSessionLoading(false);
+      await loadCartForUser(session.user.id);
+    } else {
+      setCart((prev) =>
+        prev.map((item) => (item.id === productId ? { ...item, quantity } : item))
+      );
+      persistLocalCart(cart);
     }
-  }
+  };
 
-  async function handleSignOut() {
-    setSessionLoading(true);
-    setSessionMessage(null);
-    setSessionError(null);
-
-    try {
-      const { error } = await supabase.auth.signOut();
-
-      if (error) throw error;
-
-      setSession(null);
-      window.location.href = "/";
-    } catch (error) {
-      setSessionError(error.message);
-    } finally {
-      setSessionLoading(false);
+  const clearCart = async () => {
+    if (session?.user?.id) {
+      await supabase.from("cart").delete().eq("user_id", session.user.id);
+      setCart([]);
+    } else {
+      setCart([]);
+      persistLocalCart([]);
     }
-  }
+  };
 
-  const context = {
-    products: products,
-    loading: loading,
-    error: error,
-    cart: cart,
-    addToCart: addToCart,
-    updateQtyCart: updateQtyCart,
-    removeFromCart: removeFromCart,
-    clearCart: clearCart,
-    // Context to manage user session
-    session: session,
-    sessionLoading: sessionLoading,
-    sessionMessage: sessionMessage,
-    sessionError: sessionError,
-    handleSignUp: handleSignUp,
-    handleSignIn: handleSignIn,
-    handleSignOut: handleSignOut,
+  useEffect(() => {
+    async function init() {
+      // Tema
+      const storedTheme = localStorage.getItem(LOCAL_THEME_KEY);
+      if (storedTheme) {
+        setTheme(storedTheme);
+        document.documentElement.setAttribute("data-theme", storedTheme);
+      } else {
+        setTheme("light");
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+
+      // Carrinho
+      if (session?.user?.id) {
+        await mergeLocalToRemote(session.user.id);
+        await loadCartForUser(session.user.id);
+      } else {
+        const rawCart = localStorage.getItem(LOCAL_CART_KEY);
+        setCart(rawCart ? JSON.parse(rawCart) : []);
+      }
+    }
+
+    init();
+  }, [session]);
+
+  const changeTheme = (newTheme) => {
+    setTheme(newTheme);
+    persistTheme(newTheme);
   };
 
   return (
-    <CartContext.Provider value={context}>{children}</CartContext.Provider>
+    <CartContext.Provider
+      value={{
+        products,
+        loading,
+        error,
+        cart,
+        theme,
+        addToCart,
+        updateQtyCart,
+        removeFromCart,
+        clearCart,
+        setTheme: changeTheme,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
   );
 }
