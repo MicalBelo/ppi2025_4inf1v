@@ -14,7 +14,7 @@ export function Manager() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const { data, error } = await supabase.from("product_1v").select();
+      const { data, error } = await supabase.from("product_1").select();
       if (error) setError(error.message);
       else setProducts(data || []);
       setLoading(false);
@@ -33,7 +33,7 @@ export function Manager() {
     try {
       if (editing) {
         const { error } = await supabase
-          .from("product_1v")
+          .from("product_1")
           .update({ title: form.title, price: Number(form.price), thumbnail: form.thumbnail, description: form.description })
           .eq("id", form.id);
         if (error) throw error;
@@ -41,7 +41,7 @@ export function Manager() {
         setEditing(false);
       } else {
         const { data, error } = await supabase
-          .from("product_1v")
+          .from("product_1")
           .insert([{ title: form.title, price: Number(form.price), thumbnail: form.thumbnail, description: form.description }])
           .select()
           .single();
@@ -62,7 +62,7 @@ export function Manager() {
 
   async function handleRemove(id) {
     try {
-      const { error } = await supabase.from("product_1v").delete().eq("id", id);
+      const { error } = await supabase.from("product_1").delete().eq("id", id);
       if (error) throw error;
       setProducts(products.filter(p => p.id !== id));
       if (editing && form.id === id) {

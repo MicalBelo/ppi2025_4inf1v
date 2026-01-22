@@ -1,7 +1,6 @@
 import styles from "./Product.module.css";
 import { useContext } from "react";
 import { CartContext } from "../context/CartContext";
-import { Link } from "react-router";
 
 export function Product({ product }) {
   const { addToCart } = useContext(CartContext);
@@ -14,18 +13,25 @@ export function Product({ product }) {
         className={styles.productImage}
       />
       <h2 className={styles.productTitle}>{product.title}</h2>
+      
+      {/* EXIBINDO ANO E TURMA DO IF MACAU */}
+      <div className={styles.badgeInfo}>
+        <p><strong>{product.ano}º Ano</strong> - Turma {product.turma}</p>
+      </div>
+
       <p className={styles.productDescription}>{product.description}</p>
-      <p className={styles.productPrice}>${product.price}</p>
-      {/* <Link to="/cart"> */}
+      <p className={styles.productPrice}>R$ {product.price}</p>
+
+      {/* LÓGICA DO BOTÃO EXPIRADO */}
       <button
         onClick={() => {
-          addToCart(product);
+          if (!product.expirado) addToCart(product);
         }}
-        className={styles.productButton}
+        className={product.expirado ? styles.buttonDisabled : styles.productButton}
+        disabled={product.expirado}
       >
-        ADD TO CART
+        {product.expirado ? "VENDA ENCERRADA" : "ADICIONAR AO CARRINHO"}
       </button>
-      {/* </Link> */}
     </div>
   );
 }

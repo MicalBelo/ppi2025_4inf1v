@@ -43,10 +43,26 @@ export function CartProvider({ children }) {
 
   
   useEffect(() => {
-    async function fetchProducts() {
-      const { data, error } = await supabase.from("product_1v").select();
-      if (error) setError(error.message);
-      else setProducts(data);
+   async function fetchProducts() {
+    // Agora buscamos apenas as camisas ativas e ordenamos por ano (1º ao 4º)
+    const { data, error } = await supabase
+      .from("product_1")
+      .select("*") 
+      .eq("status", true) // Regra: só mostra o que o ADM não desativou
+      .order("ano", { ascending: true });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      // Aqui fazemos a mágica: adicionamos uma propriedade "expirado" em cada camisa
+      const agora = new Date();
+      const produtosValidados = data.map(produto => ({
+        ...produto,
+        expirado: produto.data_limite ? new Date(produto.data_limite) < agora : false
+      }));
+      
+      setProducts(produtosValidados);
+    }
       setLoading(false);
     }
     fetchProducts();
@@ -59,7 +75,7 @@ export function CartProvider({ children }) {
         .select(`
           product_id,
           quantity,
-          product_1v (title, price, thumbnail)
+          product_1 (title, price, thumbnail)
         `)
         .eq("user_id", user_id);
 
@@ -71,9 +87,9 @@ export function CartProvider({ children }) {
       const loaded = data.map((row) => ({
         id: row.product_id,
         quantity: row.quantity,
-        title: row.product_1v?.title,
-        price: row.product_1v?.price,
-        thumbnail: row.product_1v?.thumbnail,
+        title: row.product_1?.title,
+        price: row.product_1?.price,
+        thumbnail: row.product_1?.thumbnail,
       }));
 
       setCart(loaded);

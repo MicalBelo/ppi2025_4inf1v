@@ -1,0 +1,53 @@
+.adminContainer {
+  padding: 5rem;
+  margin-top: 10rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+}
+
+.adminContainer h1 {
+  font-size: 3.5rem;
+  color: var(--primary-contrast-dark);
+}
+
+.table {
+  width: 100%;
+  max-width: 120rem;
+  border-collapse: collapse;
+  font-size: 1.8rem;
+  background-color: var(--gray-100);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.table th, .table td {
+  padding: 2rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table th {
+  background-color: var(--primary);
+  color: #111;
+}
+
+.table tr:hover {
+  background-color: #f0f0f0;
+}
+
+.table button {
+  padding: 1rem 1.5rem;
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.table a {
+  color: #1565c0;
+  text-decoration: underline;
+}

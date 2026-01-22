@@ -4,6 +4,7 @@ import { ProductList } from "./components/ProductList";
 import { Header } from "./components/Header";
 import { Route, Routes } from "react-router";
 import { Cart } from "./components/Cart";
+import { Admin } from "./components/Admin";
 import { CartProvider } from "./context/CartContext";
 import { SessionProvider } from "./context/SessionContext";
 import { Login } from "./components/Login";

@@ -43,3 +43,22 @@
 .productButton:hover {
   background-color: var(--primary-dark);
 }
+
+.buttonDisabled {
+  background-color: #cccccc !important;
+  color: #666666 !important;
+  cursor: not-allowed;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  font-weight: bold;
+}
+
+.badgeInfo {
+  background-color: #e8f5e9; /* Um verdinho leve estilo IF */
+  color: #2e7d32;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
