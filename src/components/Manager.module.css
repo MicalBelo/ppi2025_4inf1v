@@ -109,3 +109,24 @@
     gap: 0.5rem;
   }
 }
+
+.managerActions {
+  display: grid; /* Mudamos de flex para grid para organizar melhor */
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.managerButton {
+  grid-column: span 2; /* O botão ocupa a largura toda embaixo dos inputs */
+  margin-top: 1rem;
+}
+
+/* No mobile, volta para uma coluna só */
+@media (max-width: 600px) {
+  .managerActions {
+    grid-template-columns: 1fr;
+  }
+  .managerButton {
+    grid-column: span 1;
+  }
+}

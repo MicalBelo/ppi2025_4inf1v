@@ -87,3 +87,18 @@
 .welcomeMessage:hover {
   text-decoration: underline;
 }
+
+.adminIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  transition: transform 0.3s ease, color 0.3s;
+  cursor: pointer;
+  margin-right: 1rem;
+}
+
+.adminIcon:hover {
+  color: var(--primary-dark);
+  transform: rotate(90deg); /* Faz a engrenagem girar no hover */
+}

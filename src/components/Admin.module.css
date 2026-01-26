@@ -1,29 +1,58 @@
 .adminContainer {
-  padding: 5rem;
-  margin-top: 10rem;
+  padding: 3rem;
+  margin-top: 8rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3rem;
+  gap: 2rem;
+  min-height: 100vh;
+}
+
+.adminHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 120rem;
+  margin-bottom: 1rem;
 }
 
 .adminContainer h1 {
-  font-size: 3.5rem;
+  font-size: 3rem;
   color: var(--primary-contrast-dark);
+}
+
+.refreshButton {
+  padding: 1rem 2rem;
+  background-color: var(--primary);
+  border: none;
+  border-radius: 0.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.refreshButton:hover {
+  filter: brightness(0.9);
+}
+
+.tableWrapper {
+  width: 100%;
+  max-width: 120rem;
+  overflow-x: auto; /* Permite rolar lateralmente se a tela for pequena */
+  background-color: var(--gray-100);
+  border-radius: 1rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .table {
   width: 100%;
-  max-width: 120rem;
   border-collapse: collapse;
-  font-size: 1.8rem;
-  background-color: var(--gray-100);
-  border-radius: 1rem;
-  overflow: hidden;
+  font-size: 1.6rem;
 }
 
 .table th, .table td {
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: left;
   border-bottom: 1px solid #ddd;
 }
@@ -31,23 +60,134 @@
 .table th {
   background-color: var(--primary);
   color: #111;
+  font-weight: bold;
 }
 
 .table tr:hover {
-  background-color: #f0f0f0;
+  background-color: #f9f9f9;
 }
 
-.table button {
-  padding: 1rem 1.5rem;
+/* --- ESTILOS DAS MINIATURAS --- */
+.thumbContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.thumbnail {
+  width: 6rem;
+  height: 6rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  border: 2px solid #ddd;
+  transition: transform 0.2s;
+}
+
+.thumbnail:hover {
+  transform: scale(1.1);
+  border-color: var(--primary);
+}
+
+.zoomText {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+/* --- BADGES DE STATUS --- */
+.badgePago {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 0.5rem 1.2rem;
+  border-radius: 2rem;
+  font-weight: bold;
+  font-size: 1.4rem;
+  display: inline-block;
+}
+
+.badgePendente {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 0.5rem 1.2rem;
+  border-radius: 2rem;
+  font-weight: bold;
+  font-size: 1.4rem;
+  display: inline-block;
+}
+
+/* --- BOTÕES DE AÇÃO --- */
+.btnConfirm {
+  padding: 0.8rem 1.2rem;
   background-color: #2e7d32;
   color: white;
   border: none;
   border-radius: 0.5rem;
   cursor: pointer;
   font-weight: bold;
+  transition: opacity 0.2s;
 }
 
-.table a {
-  color: #1565c0;
-  text-decoration: underline;
+.btnUndo {
+  padding: 0.8rem 1.2rem;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+
+.btnConfirm:hover, .btnUndo:hover {
+  opacity: 0.8;
+}
+
+.noPhoto {
+  font-style: italic;
+  color: #999;
+}
+
+.btnPago {
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btnPendente {
+  background-color: #f57c00;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.statusSelect {
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  font-size: 1.4rem;
+  background-color: white;
+  cursor: pointer;
+}
+
+.inputRecado {
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ddd;
+  font-size: 1.4rem;
+  width: 100%;
+  min-width: 15rem;
+}
+
+.inputRecado:focus {
+  border-color: var(--primary);
+  outline: none;
+  background-color: #fffde7;
 }

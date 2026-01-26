@@ -1,5 +1,5 @@
 import styles from "./Header.module.css";
-import { ShoppingBasket } from "lucide-react";
+import { ShoppingBasket, Settings } from "lucide-react"; // Adicionado Settings
 import { Link } from "react-router";
 import { useContext } from "react";
 import { CartContext } from "../context/CartContext";
@@ -10,6 +10,9 @@ export function Header() {
   const { cart } = useContext(CartContext);
   const { session } = useContext(SessionContext);
 
+  // Verifica se é admin
+  const isAdmin = session?.user?.user_metadata?.admin;
+
   return (
     <div className={styles.container}>
       <div>
@@ -18,12 +21,19 @@ export function Header() {
         </Link>
         {session && (
           <Link to="/user" className={styles.welcomeMessage}>
-            Welcome, {session.user.user_metadata.username} {session.user.user_metadata.admin && '⭐'}
+            Welcome, {session.user.user_metadata.username} {isAdmin && '⭐'}
           </Link>
         )}
       </div>
 
       <div className={styles.actions}>
+        {/* ÍCONE DE ADMIN - Aparece apenas para administradores */}
+        {isAdmin && (
+          <Link to="/admin" className={styles.adminIcon} title="Painel Logística">
+            <Settings size={32} />
+          </Link>
+        )}
+
         {!session && (
           <>
             <Link to="/signin" className={styles.link}>
@@ -34,7 +44,9 @@ export function Header() {
             </Link>
           </>
         )}
+        
         <ThemeToggle />
+
         <Link to="/cart" className={styles.link}>
           <div className={styles.cartInfo}>
             <div className={styles.cartIcon}>

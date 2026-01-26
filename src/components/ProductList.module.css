@@ -2,51 +2,61 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
-  margin: 15rem 0;
-  gap: 2rem;
-}
-
-.productList {
-  padding: 1rem 3rem;
-  display: grid;
-  gap: 3rem;
-  grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
-  grid-template-rows: repeat(auto-fit, min-content);
+  /* Aumentado para empurrar o conteúdo abaixo do Header rosa */
+  padding: 10rem 2rem 2rem 2rem; 
+  width: 100%;
 }
 
 .searchContainer {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
   width: 100%;
+  max-width: 1200px;
+  margin-bottom: 3rem;
+  position: sticky;
+  top: 8rem; /* Gruda logo abaixo do Header */
+  z-index: 10;
 }
 
 .searchInput {
-  display: flex;
-  gap: 1rem;
+  flex: 1;
+  max-width: 50rem;
+  padding: 1.2rem;
+  font-size: 1.6rem;
+  border: 2px solid var(--primary);
+  border-radius: 1rem;
+  outline: none;
+}
+
+.productList {
   width: 100%;
-  max-width: 60rem;
+  display: grid;
+  gap: 3rem;
+  /* Reduzido para 28rem para caberem mais colunas lado a lado */
+  grid-template-columns: repeat(auto-fill, minmax(28rem, 1fr));
   justify-content: center;
-  padding: 1rem;
-  font-size: 2rem;
-  border: 0.25rem solid var(--primary);
-  border-radius: 1rem;
 }
 
-.searchButton {
-  background-color: var(--primary);
-  color: var(--gray-900);
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 1rem;
-  cursor: pointer;
-  font-size: 2rem;
-  font-weight: bold;
-  border: 0.25rem solid var(--gray-900);
-}
-
-.searchButton:hover {
+.card {
   background-color: var(--primary-dark);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.card img {
+  width: 100%;
+  height: 25rem;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.card h3 {
+  font-size: 1.8rem;
+  margin: 1rem 0;
 }
