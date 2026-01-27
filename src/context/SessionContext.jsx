@@ -1,73 +1,75 @@
 import { createContext, useState, useEffect } from "react";
 import { supabase } from "../utils/supabase";
 
-export const SessionContext = createContext({
-  session: null,
-  sessionLoading: false,
-  sessionMessage: null,
-  sessionError: null,
-  handleSignUp: () => {},
-  handleSignIn: () => {},
-  handleSignOut: () => {},
-});
+export const SessionContext = createContext({});
 
 export function SessionProvider({ children }) {
   const [session, setSession] = useState(null);
-  const [sessionLoading, setSessionLoading] = useState(false);
-  const [sessionMessage, setSessionMessage] = useState(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
   const [sessionError, setSessionError] = useState(null);
+  const [sessionMessage, setSessionMessage] = useState(null);
+
+  async function enrichSession(currentSession) {
+    if (!currentSession?.user) return null;
+    try {
+      const { data: equipe } = await supabase
+        .from("equipe_logistica")
+        .select("turma, cargo")
+        .eq("email", currentSession.user.email)
+        .maybeSingle();
+
+      if (equipe) {
+        return {
+          ...currentSession,
+          user: {
+            ...currentSession.user,
+            user_metadata: {
+              ...currentSession.user.user_metadata,
+              sub_admin: true,
+              turma: equipe.turma
+            }
+          }
+        };
+      }
+    } catch (err) {
+      console.error("Erro ao enriquecer sessão:", err);
+    }
+    return currentSession;
+  }
 
   useEffect(() => {
-    let mounted = true;
+    const init = async () => {
+      const { data } = await supabase.auth.getSession();
+      const fullSession = await enrichSession(data?.session);
+      setSession(fullSession);
+      setSessionLoading(false);
+    };
+    init();
 
-    async function initSession() {
-      try {
-        const { data } = await supabase.auth.getSession();
-        if (!mounted) return;
-        setSession(data?.session ?? null);
-      } catch (e) {
-        // ignore
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, s) => {
+      if (event === "SIGNED_OUT") {
+        setSession(null);
+        setSessionMessage(null);
+        setSessionError(null);
+      } else if (s) {
+        const fullSession = await enrichSession(s);
+        setSession(fullSession);
       }
-    }
-
-    initSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
+      setSessionLoading(false);
     });
 
-    return () => {
-      mounted = false;
-      if (authListener && authListener.subscription && authListener.subscription.unsubscribe) {
-        authListener.subscription.unsubscribe();
-      }
-    };
+    return () => authListener.subscription.unsubscribe();
   }, []);
 
-  async function handleSignUp(email, password, username) {
+  // --- FUNÇÕES DE LOGIN E CADASTRO ---
+
+  async function handleSignIn(email, password) {
     setSessionLoading(true);
-    setSessionMessage(null);
     setSessionError(null);
-
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username: username,
-            admin: false,
-          },
-          emailRedirectTo: `${window.location.origin}/signin`,
-        },
-      });
-
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-
-      if (data.user) {
-        setSessionMessage("Registration successful! Check your email to confirm your account.");
-        window.location.href = "/signin";
-      }
+      setSessionMessage("Login realizado com sucesso!");
     } catch (error) {
       setSessionError(error.message);
     } finally {
@@ -75,23 +77,19 @@ export function SessionProvider({ children }) {
     }
   }
 
-  async function handleSignIn(email, password) {
+  async function handleSignUp(email, password, username) {
     setSessionLoading(true);
-    setSessionMessage(null);
     setSessionError(null);
-
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: { username, admin: false },
+        },
       });
-
       if (error) throw error;
-
-      if (data.session) {
-        setSession(data.session);
-        setSessionMessage("Sign in successful!");
-      }
+      setSessionMessage("Cadastro realizado! Verifique seu e-mail.");
     } catch (error) {
       setSessionError(error.message);
     } finally {
@@ -100,33 +98,33 @@ export function SessionProvider({ children }) {
   }
 
   async function handleSignOut() {
-    setSessionLoading(true);
-    setSessionMessage(null);
-    setSessionError(null);
-
-    try {
-      const { error } = await supabase.auth.signOut();
-
-      if (error) throw error;
-
-      setSession(null);
-      window.location.href = "/";
-    } catch (error) {
-      setSessionError(error.message);
-    } finally {
-      setSessionLoading(false);
-    }
+  try {
+    await supabase.auth.signOut();
+    setSession(null);
+    // Limpa tudo para garantir que o navegador não tente voltar sozinho
+    localStorage.clear();
+    sessionStorage.clear();
+    // Redireciona para a tela de login
+    window.location.href = "/signin"; 
+  } catch (error) {
+    console.error("Erro ao sair:", error);
+    window.location.href = "/signin";
   }
+}
 
-  const value = {
-    session,
-    sessionLoading,
-    sessionMessage,
-    sessionError,
-    handleSignUp,
-    handleSignIn,
-    handleSignOut,
-  };
-
-  return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
+  return (
+    <SessionContext.Provider 
+      value={{ 
+        session, 
+        sessionLoading, 
+        sessionError, 
+        sessionMessage, 
+        handleSignIn, 
+        handleSignUp, 
+        handleSignOut 
+      }}
+    >
+      {children}
+    </SessionContext.Provider>
+  );
 }
