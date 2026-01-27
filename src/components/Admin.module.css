@@ -191,3 +191,35 @@
   outline: none;
   background-color: #fffde7;
 }
+
+.tabButtons {
+  display: flex;
+  gap: 1rem;
+}
+
+.tabBtn {
+  padding: 1rem 2rem;
+  background: var(--gray-200);
+  border: none;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.tabActive {
+  padding: 1rem 2rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.tableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+}
