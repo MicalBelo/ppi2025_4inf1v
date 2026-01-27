@@ -9,119 +9,74 @@ export function SessionProvider({ children }) {
   const [sessionError, setSessionError] = useState(null);
   const [sessionMessage, setSessionMessage] = useState(null);
 
-  async function enrichSession(currentSession) {
-    if (!currentSession?.user) return null;
-    try {
-      const { data: equipe } = await supabase
-        .from("equipe_logistica")
-        .select("turma, cargo")
-        .eq("email", currentSession.user.email)
-        .maybeSingle();
-
-      if (equipe) {
-        return {
-          ...currentSession,
-          user: {
-            ...currentSession.user,
-            user_metadata: {
-              ...currentSession.user.user_metadata,
-              sub_admin: true,
-              turma: equipe.turma
-            }
-          }
-        };
-      }
-    } catch (err) {
-      console.error("Erro ao enriquecer sessão:", err);
-    }
-    return currentSession;
-  }
-
   useEffect(() => {
-    const init = async () => {
-      const { data } = await supabase.auth.getSession();
-      const fullSession = await enrichSession(data?.session);
-      setSession(fullSession);
-      setSessionLoading(false);
-    };
-    init();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, s) => {
-      if (event === "SIGNED_OUT") {
-        setSession(null);
-        setSessionMessage(null);
-        setSessionError(null);
-      } else if (s) {
-        const fullSession = await enrichSession(s);
-        setSession(fullSession);
-      }
+    // Verifica sessão ativa ao carregar
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
       setSessionLoading(false);
     });
 
-    return () => authListener.subscription.unsubscribe();
+    // Escuta mudanças na autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setSessionLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // --- FUNÇÕES DE LOGIN E CADASTRO ---
-
+  // Função de Login
   async function handleSignIn(email, password) {
     setSessionLoading(true);
     setSessionError(null);
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      setSessionMessage("Login realizado com sucesso!");
-    } catch (error) {
-      setSessionError(error.message);
-    } finally {
-      setSessionLoading(false);
-    }
+    setSessionMessage(null);
+    
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error) setSessionError(error.message);
+    setSessionLoading(false);
   }
 
+  // FUNÇÃO QUE ESTAVA FALTANDO:
   async function handleSignUp(email, password, username) {
     setSessionLoading(true);
     setSessionError(null);
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { username, admin: false },
+    setSessionMessage(null);
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          username: username,
+          admin: false,
+          sub_admin: false,
         },
-      });
-      if (error) throw error;
-      setSessionMessage("Cadastro realizado! Verifique seu e-mail.");
-    } catch (error) {
+      },
+    });
+
+    if (error) {
       setSessionError(error.message);
-    } finally {
-      setSessionLoading(false);
+    } else {
+      setSessionMessage("Account created! Please check your email for confirmation.");
     }
+    setSessionLoading(false);
   }
 
   async function handleSignOut() {
-  try {
     await supabase.auth.signOut();
-    setSession(null);
-    // Limpa tudo para garantir que o navegador não tente voltar sozinho
-    localStorage.clear();
-    sessionStorage.clear();
-    // Redireciona para a tela de login
-    window.location.href = "/signin"; 
-  } catch (error) {
-    console.error("Erro ao sair:", error);
-    window.location.href = "/signin";
   }
-}
 
   return (
-    <SessionContext.Provider 
-      value={{ 
-        session, 
-        sessionLoading, 
-        sessionError, 
-        sessionMessage, 
-        handleSignIn, 
-        handleSignUp, 
-        handleSignOut 
+    <SessionContext.Provider
+      value={{
+        session,
+        sessionLoading,
+        sessionError,
+        sessionMessage,
+        handleSignIn,
+        handleSignUp, // ESSA LINHA É OBRIGATÓRIA
+        handleSignOut,
       }}
     >
       {children}

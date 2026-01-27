@@ -9,10 +9,9 @@ import { CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router";
 
 export function Login({ value }) {
-  
   const {
     handleSignIn,
-    handleSignUp,
+    handleSignUp, // Agora ela virá corretamente do contexto
     session,
     sessionLoading,
     sessionMessage,
@@ -20,15 +19,8 @@ export function Login({ value }) {
   } = useContext(SessionContext);
 
   const navigate = useNavigate();
-  useEffect(() => {
-    if (session) {
-      navigate("/");
-    }
-  }, [session, navigate]);
-
   const [errors, setErrors] = useState({});
-  // const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState(value);
+  const [mode, setMode] = useState(value || "signin");
   const [showPassword, setShowPassword] = useState(false);
   const [formValues, setFormValues] = useState({
     email: "",
@@ -37,104 +29,78 @@ export function Login({ value }) {
     username: "",
   });
 
+  // Redireciona se já estiver logado
   useEffect(() => {
-    setMode(value);
+    if (session) navigate("/");
+  }, [session, navigate]);
+
+  // Atualiza o modo (Login/Register) via Props
+  useEffect(() => {
+    if (value) setMode(value);
   }, [value]);
 
+  // Gerenciador de Toasts (Sucesso/Erro)
   useEffect(() => {
+    const toastConfig = {
+      position: "top-center",
+      autoClose: 5000,
+      theme: localStorage.getItem("theme") || "light",
+      transition: Bounce,
+      style: { fontSize: "1.4rem" },
+    };
+
     if (sessionMessage) {
-      toast.success(sessionMessage, {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        progress: undefined,
-        style: { fontSize: "1.5rem" },
-        theme: localStorage.getItem("theme"),
-        transition: Bounce,
-      });
-    } else {
-      if (sessionError) {
-        if (sessionError === "Email not confirmed") {
-          toast.info(sessionError, {
-            position: "top-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: false,
-            progress: undefined,
-            style: { fontSize: "1.5rem" },
-            theme: localStorage.getItem("theme"),
-            transition: Bounce,
-          });
-        } else {
-          toast.error(sessionError, {
-            position: "top-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: false,
-            progress: undefined,
-            style: { fontSize: "1.5rem" },
-            theme: localStorage.getItem("theme"),
-            transition: Bounce,
-          });
-        }
-      }
+      toast.success(sessionMessage, toastConfig);
+    }
+    if (sessionError) {
+      sessionError === "Email not confirmed" 
+        ? toast.info("Please confirm your email before logging in.", toastConfig)
+        : toast.error(sessionError, toastConfig);
     }
   }, [sessionMessage, sessionError]);
-  
+
   async function handleSubmit(e) {
     e.preventDefault();
-
     const newErrors = {};
+
+    // Validação básica
     if (!formValues.email) newErrors.email = "Email is required";
     if (!formValues.password) newErrors.password = "Password is required";
+    
     if (mode === "register") {
       if (!formValues.username) newErrors.username = "Username is required";
-      if (!formValues.confirmPassword)
-        newErrors.confirmPassword = "Confirm Password is required";
-      if (formValues.password !== formValues.confirmPassword)
+      if (formValues.password !== formValues.confirmPassword) {
         newErrors.confirmPassword = "Passwords do not match";
+      }
     }
+
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
+    // Chamada das funções do contexto
     if (mode === "signin") {
       handleSignIn(formValues.email, formValues.password);
     } else {
       handleSignUp(formValues.email, formValues.password, formValues.username);
     }
-    setFormValues({
-      email: "",
-      password: "",
-      confirmPassword: "",
-      username: "",
-    });
-    setErrors({});
-    setShowPassword(false);
+
+    // Limpa campos apenas se necessário (opcional)
+    if (!sessionError) {
+        setShowPassword(false);
+    }
   }
 
   function handleInputChange(e) {
     const { name, value } = e.target;
-    setFormValues((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormValues((prev) => ({ ...prev, [name]: value }));
   }
-
-  const handleTogglePassword = () => setShowPassword((show) => !show);
 
   return (
     <div className={styles.container}>
       <h1>{mode === "signin" ? "Sign In" : "Register"}</h1>
-      <Form
-        className={styles.form}
-        errors={errors}
-        onClearErrors={setErrors}
-        onSubmit={handleSubmit}
-      >
+      
+      <Form className={styles.form} errors={errors} onClearErrors={setErrors} onSubmit={handleSubmit}>
+        
         <Field.Root name="email" className={styles.field}>
           <Field.Label className={styles.label}>Email</Field.Label>
           <Field.Control
@@ -180,10 +146,7 @@ export function Login({ value }) {
             <button
               type="button"
               className={styles.iconBtn}
-              onClick={handleTogglePassword}
-              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              title={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              aria-controls="password"
+              onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? <EyeOffIcon /> : <EyeIcon />}
             </button>
@@ -204,51 +167,21 @@ export function Login({ value }) {
                 placeholder="Confirm your password"
                 className={styles.input}
               />
-              <button
-                type="button"
-                className={styles.iconBtn}
-                onClick={handleTogglePassword}
-                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                title={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                aria-controls="password"
-              >
-                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-              </button>
             </div>
             <Field.Error className={styles.error} />
           </Field.Root>
         )}
-        <button
-          type="submit"
-          className={styles.button}
-          disabled={sessionLoading}
-        >
+
+        <button type="submit" className={styles.button} disabled={sessionLoading}>
           {sessionLoading ? (
-            <CircularProgress
-              size={24}
-              thickness={4}
-              sx={{
-                color: "var(--primary-contrast)",
-                marginLeft: "1rem",
-              }}
-            />
-          ) : mode === "signin" ? (
-            "Sign In"
-          ) : (
-            "Register"
-          )}
+            <CircularProgress size={24} sx={{ color: "white" }} />
+          ) : mode === "signin" ? "Sign In" : "Register"}
         </button>
       </Form>
-      {mode === "register" && (
-        <button onClick={() => setMode("signin")} className={styles.info}>
-          Already have an account? Click here!
-        </button>
-      )}
-      {mode === "signin" && (
-        <button onClick={() => setMode("register")} className={styles.info}>
-          Don't have an account? Click here!
-        </button>
-      )}
+
+      <button onClick={() => setMode(mode === "signin" ? "register" : "signin")} className={styles.info}>
+        {mode === "signin" ? "Don't have an account? Click here!" : "Already have an account? Click here!"}
+      </button>
     </div>
   );
 }

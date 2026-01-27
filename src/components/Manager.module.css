@@ -1,132 +1,149 @@
 .managerContainer {
   min-height: 100vh;
-  background: var(--primary-dark);
+  padding: 12rem 2rem 5rem; /* Espaço generoso para o Header */
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 3rem 1rem;
+  background-color: #fce4ec; /* Fundo rosado conforme prints */
 }
 
 .managerBox {
-  background: var(--primary-light);
+  background: white;
   border-radius: 1.5rem;
-  box-shadow: 0 4px 24px #0002;
-  padding: 2.5rem 2rem;
-  max-width: 700px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  padding: 2.5rem;
+  max-width: 800px;
   width: 100%;
-  margin: 2rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  margin-bottom: 3rem;
 }
 
 .managerTitle {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: var(--primary-dark);
+  font-size: 2.2rem;
+  color: #a34c5c;
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .managerActions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
 }
 
 .managerInput {
-  padding: 0.8rem;
+  padding: 1rem;
   border: 1px solid #ddd;
-  border-radius: 0.7rem;
-  font-size: 1.1rem;
-  outline: none;
-  transition: border 0.2s;
-  min-width: 120px;
-}
-
-.managerInput:focus {
-  border-color: var(--primary-dark);
+  border-radius: 0.8rem;
+  font-size: 1.4rem;
 }
 
 .managerButton {
-  background: var(--primary-dark);
-  color: var(--primary-light);
+  grid-column: span 2;
+  background: #a34c5c;
+  color: white;
   border: none;
-  border-radius: 0.7rem;
-  padding: 0.8rem 2rem;
-  font-size: 1.1rem;
+  padding: 1.2rem;
+  border-radius: 0.8rem;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.2s;
-}
-
-.managerButton:hover {
-  background: var(--secundary-light);
-  color: var(--primary-dark);
-}
-
-.managerList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.managerItem {
-  background: #fafafa;
-  border: 1px solid #eee;
-  border-radius: 0.7rem;
-  padding: 1rem 1.5rem;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.managerItemInfo {
-  flex: 1;
-}
-
-.managerItemActions button {
-  margin-left: 0.5rem;
-}
-
-@media (max-width: 600px) {
-  .managerBox {
-    padding: 1rem 0.5rem;
-  }
-  .managerTitle {
-    font-size: 1.5rem;
-  }
-  .managerActions {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .managerItem {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
-
-.managerActions {
-  display: grid; /* Mudamos de flex para grid para organizar melhor */
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.managerButton {
-  grid-column: span 2; /* O botão ocupa a largura toda embaixo dos inputs */
+  font-size: 1.6rem;
   margin-top: 1rem;
 }
 
-/* No mobile, volta para uma coluna só */
+/* --- LISTAGEM COM MINIATURA --- */
+.managerList {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.managerItem {
+  background: white;
+  padding: 1.2rem;
+  border-radius: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.productMainInfo {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.thumbWrapper {
+  width: 6rem;
+  height: 6rem;
+  flex-shrink: 0;
+}
+
+.adminThumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.8rem;
+  border: 1px solid #eee;
+}
+
+.noImg {
+  width: 100%;
+  height: 100%;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: #999;
+  border-radius: 0.8rem;
+}
+
+.managerItemInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.managerItemInfo strong {
+  font-size: 1.6rem;
+  color: #333;
+}
+
+.managerItemInfo span {
+  color: #2e7d32;
+  font-weight: bold;
+  font-size: 1.4rem;
+}
+
+.managerItemInfo small {
+  color: #777;
+  font-size: 1.1rem;
+}
+
+/* BOTÕES DE AÇÃO */
+.managerItemActions {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.btnEdit, .btnDelete {
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.6rem;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.btnEdit { background: #e3f2fd; color: #1976d2; }
+.btnDelete { background: #ffebee; color: #d32f2f; }
+
 @media (max-width: 600px) {
-  .managerActions {
-    grid-template-columns: 1fr;
-  }
-  .managerButton {
-    grid-column: span 1;
-  }
+  .managerActions { grid-template-columns: 1fr; }
+  .managerButton { grid-column: span 1; }
+  .managerItem { flex-direction: column; align-items: flex-start; }
+  .managerItemActions { margin-top: 1rem; width: 100%; justify-content: flex-end; }
 }

@@ -2,18 +2,7 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "../utils/supabase";
 import { SessionContext } from "./SessionContext";
 
-export const CartContext = createContext({
-  products: [],
-  loading: false,
-  error: null,
-  cart: [],
-  theme: "light",
-  addToCart: () => {},
-  updateQtyCart: () => {},
-  removeFromCart: () => {},
-  clearCart: () => {},
-  setTheme: () => {},
-});
+export const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const [products, setProducts] = useState([]);
@@ -26,14 +15,12 @@ export function CartProvider({ children }) {
   const LOCAL_CART_KEY = "cart";
   const LOCAL_THEME_KEY = "theme";
 
-  
   const persistLocalCart = (items) => {
     try {
       localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(items));
     } catch {}
   };
 
-  
   const persistTheme = (value) => {
     try {
       localStorage.setItem(LOCAL_THEME_KEY, value);
@@ -41,33 +28,29 @@ export function CartProvider({ children }) {
     } catch {}
   };
 
-  
   useEffect(() => {
-   async function fetchProducts() {
-    // Agora buscamos apenas as camisas ativas e ordenamos por ano (1º ao 4º)
-    const { data, error } = await supabase
-      .from("product_1")
-      .select("*") 
-      .eq("status", true) // Regra: só mostra o que o ADM não desativou
-      .order("ano", { ascending: true });
+    async function fetchProducts() {
+      const { data, error } = await supabase
+        .from("product_1")
+        .select("*")
+        .eq("status", true)
+        .order("ano", { ascending: true });
 
-    if (error) {
-      setError(error.message);
-    } else {
-      // Aqui fazemos a mágica: adicionamos uma propriedade "expirado" em cada camisa
-      const agora = new Date();
-      const produtosValidados = data.map(produto => ({
-        ...produto,
-        expirado: produto.data_limite ? new Date(produto.data_limite) < agora : false
-      }));
-      
-      setProducts(produtosValidados);
-    }
+      if (error) {
+        setError(error.message);
+      } else {
+        const agora = new Date();
+        const produtosValidados = data.map(produto => ({
+          ...produto,
+          expirado: produto.data_limite ? new Date(produto.data_limite) < agora : false
+        }));
+        setProducts(produtosValidados);
+      }
       setLoading(false);
     }
     fetchProducts();
   }, []);
-  
+
   const loadCartForUser = async (user_id) => {
     try {
       const { data, error } = await supabase
@@ -75,21 +58,21 @@ export function CartProvider({ children }) {
         .select(`
           product_id,
           quantity,
-          product_1 (title, price, thumbnail)
+          tamanho,
+          product_1 (title, price, thumbnail, turma)
         `)
         .eq("user_id", user_id);
 
-      if (error) {
-        console.error("Error loading cart:", error);
-        return;
-      }
+      if (error) return console.error("Error loading cart:", error);
 
       const loaded = data.map((row) => ({
         id: row.product_id,
         quantity: row.quantity,
+        tamanho: row.tamanho || "", // Carrega o tamanho do banco
         title: row.product_1?.title,
         price: row.product_1?.price,
         thumbnail: row.product_1?.thumbnail,
+        turma: row.product_1?.turma
       }));
 
       setCart(loaded);
@@ -97,7 +80,7 @@ export function CartProvider({ children }) {
       console.error(e);
     }
   };
-  
+
   const mergeLocalToRemote = async (user_id) => {
     try {
       const raw = localStorage.getItem(LOCAL_CART_KEY);
@@ -105,60 +88,96 @@ export function CartProvider({ children }) {
       const local = JSON.parse(raw);
 
       for (const item of local) {
-        const product_id = item.id;
         const { data: existing } = await supabase
           .from("cart")
           .select("quantity")
-          .match({ user_id, product_id })
+          .match({ user_id, product_id: item.id })
           .single();
 
         if (existing) {
-          const newQty = existing.quantity + item.quantity;
           await supabase
             .from("cart")
-            .update({ quantity: newQty })
-            .match({ user_id, product_id });
+            .update({ quantity: existing.quantity + item.quantity, tamanho: item.tamanho })
+            .match({ user_id, product_id: item.id });
         } else {
-          await supabase.from("cart").insert([{ user_id, product_id, quantity: item.quantity }]);
+          await supabase.from("cart").insert([{ 
+            user_id, 
+            product_id: item.id, 
+            quantity: item.quantity,
+            tamanho: item.tamanho || "" 
+          }]);
         }
       }
-
       localStorage.removeItem(LOCAL_CART_KEY);
       await loadCartForUser(user_id);
     } catch (e) {
       console.error("Error merging cart:", e);
     }
   };
-  
+
   const addToCart = async (product) => {
     const product_id = product.id;
+    // Iniciamos com tamanho vazio ou um padrão se preferir
+    const defaultTamanho = ""; 
 
     if (session?.user?.id) {
       const user_id = session.user.id;
-      try {
-        const { data: existing } = await supabase
-          .from("cart")
-          .select("quantity")
-          .match({ user_id, product_id })
-          .single();
+      const { data: existing } = await supabase
+        .from("cart")
+        .select("quantity")
+        .match({ user_id, product_id })
+        .single();
 
-        if (existing) {
-          const newQty = existing.quantity + 1;
-          await supabase.from("cart").update({ quantity: newQty }).match({ user_id, product_id });
-        } else {
-          await supabase.from("cart").insert([{ user_id, product_id, quantity: 1 }]);
-        }
-
-        await loadCartForUser(user_id);
-      } catch (e) {
-        console.error("Error adding to remote cart", e);
+      if (existing) {
+        await supabase.from("cart")
+          .update({ quantity: existing.quantity + 1 })
+          .match({ user_id, product_id });
+      } else {
+        await supabase.from("cart").insert([{ 
+          user_id, 
+          product_id, 
+          quantity: 1, 
+          tamanho: defaultTamanho 
+        }]);
       }
+      await loadCartForUser(user_id);
     } else {
       setCart((prev) => {
         const existing = prev.find((it) => it.id === product_id);
         const next = existing
           ? prev.map((it) => (it.id === product_id ? { ...it, quantity: it.quantity + 1 } : it))
-          : [...prev, { id: product_id, quantity: 1, title: product.title, price: product.price, thumbnail: product.thumbnail }];
+          : [...prev, { 
+              id: product_id, 
+              quantity: 1, 
+              tamanho: defaultTamanho,
+              title: product.title, 
+              price: product.price, 
+              thumbnail: product.thumbnail,
+              turma: product.turma 
+            }];
+        persistLocalCart(next);
+        return next;
+      });
+    }
+  };
+
+  // FUNÇÃO ATUALIZADA: Aceita quantidade e tamanho
+  const updateQtyCart = async (productId, quantity, tamanho) => {
+    if (session?.user?.id) {
+      if (quantity <= 0) {
+        await supabase.from("cart").delete().match({ user_id: session.user.id, product_id: productId });
+      } else {
+        // Atualiza quantidade E tamanho no Supabase
+        await supabase.from("cart")
+          .update({ quantity, tamanho })
+          .match({ user_id: session.user.id, product_id: productId });
+      }
+      await loadCartForUser(session.user.id);
+    } else {
+      setCart((prev) => {
+        const next = prev.map((item) => 
+          item.id === productId ? { ...item, quantity, tamanho } : item
+        );
         persistLocalCart(next);
         return next;
       });
@@ -178,22 +197,6 @@ export function CartProvider({ children }) {
     }
   };
 
-  const updateQtyCart = async (productId, quantity) => {
-    if (session?.user?.id) {
-      if (quantity <= 0) {
-        await supabase.from("cart").delete().match({ user_id: session.user.id, product_id: productId });
-      } else {
-        await supabase.from("cart").update({ quantity }).match({ user_id: session.user.id, product_id: productId });
-      }
-      await loadCartForUser(session.user.id);
-    } else {
-      setCart((prev) =>
-        prev.map((item) => (item.id === productId ? { ...item, quantity } : item))
-      );
-      persistLocalCart(cart);
-    }
-  };
-
   const clearCart = async () => {
     if (session?.user?.id) {
       await supabase.from("cart").delete().eq("user_id", session.user.id);
@@ -206,17 +209,10 @@ export function CartProvider({ children }) {
 
   useEffect(() => {
     async function init() {
-      // Tema
-      const storedTheme = localStorage.getItem(LOCAL_THEME_KEY);
-      if (storedTheme) {
-        setTheme(storedTheme);
-        document.documentElement.setAttribute("data-theme", storedTheme);
-      } else {
-        setTheme("light");
-        document.documentElement.setAttribute("data-theme", "light");
-      }
+      const storedTheme = localStorage.getItem(LOCAL_THEME_KEY) || "light";
+      setTheme(storedTheme);
+      document.documentElement.setAttribute("data-theme", storedTheme);
 
-      // Carrinho
       if (session?.user?.id) {
         await mergeLocalToRemote(session.user.id);
         await loadCartForUser(session.user.id);
@@ -225,14 +221,8 @@ export function CartProvider({ children }) {
         setCart(rawCart ? JSON.parse(rawCart) : []);
       }
     }
-
     init();
   }, [session]);
-
-  const changeTheme = (newTheme) => {
-    setTheme(newTheme);
-    persistTheme(newTheme);
-  };
 
   return (
     <CartContext.Provider
@@ -246,7 +236,7 @@ export function CartProvider({ children }) {
         updateQtyCart,
         removeFromCart,
         clearCart,
-        setTheme: changeTheme,
+        setTheme: (t) => { setTheme(t); persistTheme(t); },
       }}
     >
       {children}

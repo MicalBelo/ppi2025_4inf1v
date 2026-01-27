@@ -4,149 +4,141 @@ import { supabase } from "../utils/supabase";
 import { SessionContext } from "../context/SessionContext";
 
 export function Manager() {
-  const { session } = useContext(SessionContext);
+  const { session, sessionLoading } = useContext(SessionContext);
   const [products, setProducts] = useState([]);
-  const [form, setForm] = useState({ 
-    id: null, title: "", price: "", thumbnail: "", description: "", turma: "", data_limite: "", ano: ""
-  });
-  const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  
+  // 1. Adicionado 'description' ao estado inicial
+  const [form, setForm] = useState({ 
+    id: null, 
+    title: "", 
+    price: "", 
+    thumbnail: "", 
+    turma: "", 
+    ano: "",
+    description: "" 
+  });
+
+  const isAdminGeral = session?.user?.user_metadata?.admin;
+  const isSubAdm = session?.user?.user_metadata?.sub_admin;
+  const minhaTurma = session?.user?.user_metadata?.turma;
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      const { data, error } = await supabase.from("product_1").select("*").order("title");
-      if (error) setError(error.message);
-      else setProducts(data || []);
-      setLoading(false);
-    }
-    if (session?.user?.user_metadata?.admin) load();
+    if (session) fetchProducts();
   }, [session]);
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  async function fetchProducts() {
+    setLoading(true);
+    let query = supabase.from("product_1").select("*");
+    if (isSubAdm && !isAdminGeral) query = query.eq("turma", minhaTurma);
+    
+    const { data, error } = await query.order("title");
+    if (!error) setProducts(data || []);
+    setLoading(false);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     
-    // Validação atualizada para incluir os novos campos
-    if (!form.title || form.price === "" || !form.turma || !form.data_limite || !form.ano) {
-      alert("Por favor, preencha Nome, Preço, Turma (ex: 1inf1m), Ano e Data Limite.");
-      return;
-    }
-
-    const payload = { 
-      title: form.title, 
-      price: Number(form.price), 
-      thumbnail: form.thumbnail, 
-      description: form.description,
-      turma: form.turma,          // Texto (ex: 1inf1m)
-      ano: Number(form.ano),      // Número (convertido para o Supabase)
-      data_limite: form.data_limite 
+    // 2. Incluído 'description' no payload enviado ao Supabase
+    const payload = {
+      title: form.title,
+      price: Number(form.price),
+      thumbnail: form.thumbnail,
+      turma: isAdminGeral ? form.turma : minhaTurma,
+      ano: Number(form.ano),
+      description: form.description 
     };
 
-    try {
-      if (editing) {
-        const { error } = await supabase.from("product_1").update(payload).eq("id", form.id);
-        if (error) throw error;
-        setProducts(products.map(p => p.id === form.id ? { ...p, ...payload } : p));
-        setEditing(false);
-      } else {
-        const { data, error } = await supabase.from("product_1").insert([payload]).select().single();
-        if (error) throw error;
-        setProducts([...products, data]);
-      }
-      // Reseta o formulário
-      setForm({ id: null, title: "", price: "", thumbnail: "", description: "", turma: "", data_limite: "", ano: "" });
-    } catch (err) {
-      setError(err.message);
-      alert("Erro ao salvar: " + err.message);
+    const { error } = form.id 
+      ? await supabase.from("product_1").update(payload).eq("id", form.id)
+      : await supabase.from("product_1").insert([payload]);
+
+    if (error) {
+      alert("Erro: " + error.message);
+    } else {
+      alert("Sucesso!");
+      // 3. Resetando o campo de descrição após o envio
+      setForm({ id: null, title: "", price: "", thumbnail: "", turma: "", ano: "", description: "" });
+      fetchProducts();
     }
   }
 
-  function handleEdit(product) {
-    setForm({ 
-      id: product.id, 
-      title: product.title, 
-      price: product.price, 
-      thumbnail: product.thumbnail, 
-      description: product.description,
-      turma: product.turma || "",
-      ano: product.ano || "",
-      data_limite: product.data_limite || ""
-    });
-    setEditing(true);
-  }
-
-  async function handleRemove(id) {
-    if(!confirm("Deseja excluir este produto?")) return;
+  async function handleDelete(id) {
+    if (!window.confirm("Tem certeza que deseja excluir este produto?")) return;
     const { error } = await supabase.from("product_1").delete().eq("id", id);
-    if (!error) setProducts(products.filter(p => p.id !== id));
+    if (error) alert(error.message);
+    else fetchProducts();
   }
 
-  if (!session?.user?.user_metadata?.admin) return <p>Acesso negado.</p>;
+  if (sessionLoading) return <div className={styles.managerContainer}><p>Carregando...</p></div>;
+  if (!isAdminGeral && !isSubAdm) return <div className={styles.managerContainer}><p>Acesso negado.</p></div>;
 
   return (
     <div className={styles.managerContainer}>
       <div className={styles.managerBox}>
-        <h2 className={styles.managerTitle}>Gerenciar Produtos</h2>
+        <h2 className={styles.managerTitle}>
+          Gerenciar Camisas {isSubAdm && `(${minhaTurma})`}
+        </h2>
+        
         <form onSubmit={handleSubmit} className={styles.managerActions}>
-          <div className={styles.inputGroup}>
-            <label>Nome da Camisa</label>
-            <input name="title" value={form.title} onChange={handleChange} className={styles.managerInput} required placeholder="Ex: Camisa Secundária" />
-          </div>
+          <input className={styles.managerInput} placeholder="Título da Camisa" value={form.title} onChange={e => setForm({...form, title: e.target.value})} required />
+          <input className={styles.managerInput} placeholder="Preço (Ex: 45.90)" type="number" step="0.01" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required />
           
-          <div className={styles.inputGroup}>
-            <label>Preço</label>
-            <input name="price" type="number" value={form.price} onChange={handleChange} className={styles.managerInput} required />
-          </div>
-
-          <div className={styles.inputGroup}>
-            <label>Código da Turma</label>
-            <input name="turma" value={form.turma} onChange={handleChange} className={styles.managerInput} required placeholder="Ex: 1inf1m" />
-          </div>
-
-          <div className={styles.inputGroup}>
-            <label>Ano Escolar</label>
-            <select name="ano" value={form.ano} onChange={handleChange} className={styles.managerInput} required>
-              <option value="">Selecione...</option>
-              <option value="1">1º Ano</option>
-              <option value="2">2º Ano</option>
-              <option value="3">3º Ano</option>
-              <option value="4">4º Ano</option>
-            </select>
-          </div>
-
-          <div className={styles.inputGroup}>
-            <label>Data Limite</label>
-            <input name="data_limite" type="date" value={form.data_limite} onChange={handleChange} className={styles.managerInput} required />
-          </div>
-
-          <div className={styles.inputGroupFull}>
-            <label>URL Imagem</label>
-            <input name="thumbnail" value={form.thumbnail} onChange={handleChange} className={styles.managerInput} />
-          </div>
-
-          <button type="submit" className={styles.managerButton}>{editing ? "Salvar Alterações" : "Adicionar Produto"}</button>
+          {/* 4. Novo campo de Descrição (usando uma classe que ocupe a largura total se desejar) */}
+          <input className={styles.managerInput} placeholder="Descrição (obrigatório)" value={form.description} onChange={e => setForm({...form, description: e.target.value})} required />
+          
+          <input className={styles.managerInput} placeholder="URL da Imagem" value={form.thumbnail} onChange={e => setForm({...form, thumbnail: e.target.value})} />
+          
+          {isAdminGeral && (
+            <input className={styles.managerInput} placeholder="Turma (ex: 1º INFO)" value={form.turma} onChange={e => setForm({...form, turma: e.target.value})} />
+          )}
+          
+          <select className={styles.managerInput} value={form.ano} onChange={e => setForm({...form, ano: e.target.value})} required>
+            <option value="">Selecione o Ano...</option>
+            <option value="1">1º Ano</option>
+            <option value="2">2º Ano</option>
+            <option value="3">3º Ano</option>
+            <option value="4">4º Ano</option>
+          </select>
+          
+          <button type="submit" className={styles.managerButton}>
+            {form.id ? "Atualizar Produto" : "Adicionar Produto"}
+          </button>
         </form>
+      </div>
 
-        <ul className={styles.managerList}>
-          {products.map(p => (
-            <li key={p.id} className={styles.managerItem}>
-              <div className={styles.managerItemInfo}>
-                <strong>{p.title}</strong>
-                <div>{p.ano}º Ano - {p.turma}</div>
-                <div className={styles.dateLabel}>Limite: {p.data_limite}</div>
+      <div className={styles.managerList}>
+        {loading ? (
+          <p>Buscando camisas...</p>
+        ) : products.length > 0 ? (
+          products.map((product) => (
+            <div key={product.id} className={styles.managerItem}>
+              <div className={styles.productMainInfo}>
+                <div className={styles.thumbWrapper}>
+                  {product.thumbnail ? (
+                    <img src={product.thumbnail} alt={product.title} className={styles.adminThumb} />
+                  ) : (
+                    <div className={styles.noImg}>Sem foto</div>
+                  )}
+                </div>
+                
+                <div className={styles.managerItemInfo}>
+                  <strong>{product.title}</strong>
+                  <span>R$ {Number(product.price).toFixed(2)}</span>
+                  <small>Turma: {product.turma} | {product.ano}º ano</small>
+                </div>
               </div>
+
               <div className={styles.managerItemActions}>
-                <button onClick={() => handleEdit(p)} className={styles.managerButtonEdit}>Editar</button>
-                <button onClick={() => handleRemove(p.id)} className={styles.managerButtonDelete}>Remover</button>
+                <button onClick={() => setForm(product)} className={styles.btnEdit}>Editar</button>
+                <button onClick={() => handleDelete(product.id)} className={styles.btnDelete}>Excluir</button>
               </div>
-            </li>
-          ))}
-        </ul>
+            </div>
+          ))
+        ) : (
+          <p>Nenhuma camisa cadastrada.</p>
+        )}
       </div>
     </div>
   );

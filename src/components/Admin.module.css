@@ -1,11 +1,14 @@
 .adminContainer {
-  padding: 3rem;
-  margin-top: 8rem;
+  /* Aumentamos o padding superior para garantir que fique abaixo do Header global */
+  padding: 2rem;
+  padding-top: 10rem; /* Ajuste este valor conforme a altura do seu Header principal */
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2rem;
   min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .adminHeader {
@@ -13,213 +16,169 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 120rem;
-  margin-bottom: 1rem;
+  max-width: 1200px; /* Removido rem para evitar quebras em zoom alto */
+  margin-bottom: 2rem;
+  flex-wrap: wrap; /* Permite que os botões quebrem linha em telas pequenas */
+  gap: 1.5rem;
+  background-color: var(--gray-100);
+  padding: 2rem;
+  border-radius: 1rem;
 }
 
 .adminContainer h1 {
-  font-size: 3rem;
+  font-size: clamp(2rem, 5vw, 3rem); /* Fonte fluida */
   color: var(--primary-contrast-dark);
+  margin: 0;
 }
 
-.refreshButton {
-  padding: 1rem 2rem;
-  background-color: var(--primary);
-  border: none;
-  border-radius: 0.8rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: filter 0.2s;
-}
-
-.refreshButton:hover {
-  filter: brightness(0.9);
-}
-
-.tableWrapper {
-  width: 100%;
-  max-width: 120rem;
-  overflow-x: auto; /* Permite rolar lateralmente se a tela for pequena */
-  background-color: var(--gray-100);
-  border-radius: 1rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 1.6rem;
-}
-
-.table th, .table td {
-  padding: 1.5rem;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.table th {
-  background-color: var(--primary);
-  color: #111;
-  font-weight: bold;
-}
-
-.table tr:hover {
-  background-color: #f9f9f9;
-}
-
-/* --- ESTILOS DAS MINIATURAS --- */
-.thumbContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.thumbnail {
-  width: 6rem;
-  height: 6rem;
-  object-fit: cover;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  border: 2px solid #ddd;
-  transition: transform 0.2s;
-}
-
-.thumbnail:hover {
-  transform: scale(1.1);
-  border-color: var(--primary);
-}
-
-.zoomText {
-  font-size: 1.1rem;
-  color: #666;
-}
-
-/* --- BADGES DE STATUS --- */
-.badgePago {
-  background-color: #d4edda;
-  color: #155724;
-  padding: 0.5rem 1.2rem;
-  border-radius: 2rem;
-  font-weight: bold;
-  font-size: 1.4rem;
-  display: inline-block;
-}
-
-.badgePendente {
-  background-color: #fff3cd;
-  color: #856404;
-  padding: 0.5rem 1.2rem;
-  border-radius: 2rem;
-  font-weight: bold;
-  font-size: 1.4rem;
-  display: inline-block;
-}
-
-/* --- BOTÕES DE AÇÃO --- */
-.btnConfirm {
-  padding: 0.8rem 1.2rem;
-  background-color: #2e7d32;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: bold;
-  transition: opacity 0.2s;
-}
-
-.btnUndo {
-  padding: 0.8rem 1.2rem;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: bold;
-  transition: opacity 0.2s;
-}
-
-.btnConfirm:hover, .btnUndo:hover {
-  opacity: 0.8;
-}
-
-.noPhoto {
-  font-style: italic;
-  color: #999;
-}
-
-.btnPago {
-  background-color: #2e7d32;
-  color: white;
-  border: none;
-  padding: 0.6rem 1rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.btnPendente {
-  background-color: #f57c00;
-  color: white;
-  border: none;
-  padding: 0.6rem 1rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.statusSelect {
-  padding: 0.8rem;
-  border-radius: 0.5rem;
-  border: 1px solid #ccc;
-  font-size: 1.4rem;
-  background-color: white;
-  cursor: pointer;
-}
-
-.inputRecado {
-  padding: 0.8rem;
-  border-radius: 0.5rem;
-  border: 1px solid #ddd;
-  font-size: 1.4rem;
-  width: 100%;
-  min-width: 15rem;
-}
-
-.inputRecado:focus {
-  border-color: var(--primary);
-  outline: none;
-  background-color: #fffde7;
-}
-
+/* --- ABAS E BOTÕES --- */
 .tabButtons {
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tabBtn, .tabActive {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.4rem;
+  transition: all 0.2s ease;
 }
 
 .tabBtn {
-  padding: 1rem 2rem;
-  background: var(--gray-200);
-  border: none;
-  border-radius: 0.8rem;
-  cursor: pointer;
-  font-weight: bold;
+  background: #e0e0e0;
+  color: #555;
 }
 
 .tabActive {
-  padding: 1rem 2rem;
   background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 0.8rem;
-  cursor: pointer;
-  font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  color: #000; /* Cor de contraste */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* --- TABELA E WRAPPER --- */
+.tableWrapper {
+  width: 100%;
+  max-width: 1200px;
+  overflow-x: auto; 
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  margin-bottom: 5rem;
 }
 
 .tableHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 2rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.tableHeader h2 {
+  font-size: 2rem;
+  margin: 0;
+  color: #333;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.4rem;
+  min-width: 800px; /* Garante que a tabela não esmague os dados */
+}
+
+.table th {
+  background-color: #f8f9fa;
+  color: #333;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  padding: 1.5rem;
+  text-align: left;
+}
+
+.table td {
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+/* --- BADGES E BOTÕES DE AÇÃO --- */
+.badgePago, .badgePendente {
+  padding: 0.6rem 1.2rem;
+  border-radius: 5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+}
+
+.badgePago { background-color: #c8e6c9; color: #2e7d32; }
+.badgePendente { background-color: #fff9c4; color: #f57f17; }
+
+.btnConfirm, .btnUndo {
+  padding: 1rem 1.5rem;
+  border-radius: 0.6rem;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1.3rem;
+  transition: transform 0.1s, filter 0.2s;
+}
+
+.btnConfirm { background-color: #4caf50; color: white; }
+.btnUndo { background-color: #ef5350; color: white; }
+
+.btnConfirm:active, .btnUndo:active { transform: scale(0.95); }
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+  .adminContainer {
+    padding: 1rem;
+    padding-top: 9rem;
+  }
+  
+  .adminHeader {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.statusSelect {
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  font-size: 1.2rem;
+  background-color: white;
+  cursor: pointer;
+}
+
+.messageBox input {
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+  font-size: 1.2rem;
+}
+
+.badgePago {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #2e7d32;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.badgePendente {
+  background-color: #fff3e0;
+  color: #ef6c00;
+  border: 1px solid #ef6c00;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
 }

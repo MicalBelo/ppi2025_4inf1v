@@ -159,3 +159,11 @@
   font-size: 1.4rem !important;
   color: #666 !important;
 }
+.selectTamanho {
+  padding: 0.5rem;
+  font-size: 1.4rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  margin-top: 0.5rem;
+  width: fit-content;
+}
